@@ -1,8 +1,10 @@
 {
     "name": "url-shortener",
     "version": "1.0.0",
-    "dependencies": {},
+    "dependencies": {
+        "@vercel/kv": "^1.0.0"
+    },
     "engines": {
-        "node": "14.x"
+        "node": "22.x"
     }
 }
