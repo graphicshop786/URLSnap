@@ -70,3 +70,56 @@ module.exports = async (req, res) => {
         res.status(405).send('Method not allowed');
     }
 };
+const { kv } = require('@vercel/kv');
+
+function generateShortCode() {
+    return Math.random().toString(36).substring(2, 8);
+}
+
+module.exports = async (req, res) => {
+    if (req.method === 'POST') {
+        const { url, customCode } = req.body;
+
+        if (!url || !url.startsWith('http')) {
+            res.status(400).json({ error: 'Invalid URL' });
+            return;
+        }
+
+        let shortCode;
+        const links = (await kv.get('links')) || {};
+
+        if (customCode) {
+            if (!/^[a-zA-Z0-9]{3,15}$/.test(customCode)) {
+                res.status(400).json({ error: 'Custom code must be 3-15 alphanumeric characters' });
+                return;
+            }
+            if (links[customCode]) {
+                res.status(400).json({ error: 'Custom code already taken' });
+                return;
+            }
+            shortCode = customCode;
+        } else {
+            do {
+                shortCode = generateShortCode();
+            } while (links[shortCode]);
+        }
+
+        links[shortCode] = url;
+        await kv.set('links', links);
+
+        const shortURL = `${req.headers.host}/${shortCode}`;
+        res.status(200).json({ shortURL: `https://${shortURL}` });
+    } else if (req.method === 'GET') {
+        const shortCode = req.query.code;
+        const links = (await kv.get('links')) || {};
+
+        const originalURL = links[shortCode];
+        if (originalURL) {
+            res.redirect(originalURL);
+        } else {
+            res.status(404).send('Short URL not found');
+        }
+    } else {
+        res.status(405).send('Method not allowed');
+    }
+};
