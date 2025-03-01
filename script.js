@@ -1,5 +1,5 @@
-function shortenURL() {
-    const urlInput = document.getElementById('urlInput').value;
+async function shortenURL() {
+    const urlInput = document.getElementById('urlInput').value.trim();
     const customCode = document.getElementById('customCode').value.trim();
     const resultDiv = document.getElementById('result');
 
@@ -8,31 +8,25 @@ function shortenURL() {
         return;
     }
 
-    // Agar custom code diya gaya hai, toh usey bhejo, warna empty chhod do
     const requestBody = { url: urlInput };
-    if (customCode) {
-        requestBody.customCode = customCode;
-    }
+    if (customCode) requestBody.customCode = customCode;
 
-    fetch('/api/shorten', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch('/api/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
         if (data.shortURL) {
             resultDiv.innerHTML = `Shortened URL: <a href="${data.shortURL}" target="_blank">${data.shortURL}</a>`;
-        } else if (data.error) {
-            resultDiv.innerHTML = `Error: ${data.error}`;
         } else {
-            resultDiv.innerHTML = "Error shortening URL.";
+            resultDiv.innerHTML = `Error: ${data.error || "Something went wrong"}`;
         }
-    })
-    .catch(error => {
+    } catch (error) {
         resultDiv.innerHTML = "Error connecting to server.";
         console.error('Error:', error);
-    });
+    }
 }
