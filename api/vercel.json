@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/:code",
+            "destination": "/api/shorten?code=:code"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/public/index.html"
+        }
+    ]
+}

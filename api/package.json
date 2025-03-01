@@ -1,0 +1,8 @@
+{
+    "name": "url-shortener",
+    "version": "1.0.0",
+    "dependencies": {},
+    "engines": {
+        "node": "14.x"
+    }
+}
