@@ -1,5 +1,6 @@
 function shortenURL() {
     const urlInput = document.getElementById('urlInput').value;
+    const customCode = document.getElementById('customCode').value.trim();
     const resultDiv = document.getElementById('result');
 
     if (!urlInput || !urlInput.startsWith('http')) {
@@ -7,17 +8,25 @@ function shortenURL() {
         return;
     }
 
+    // Agar custom code diya gaya hai, toh usey bhejo, warna empty chhod do
+    const requestBody = { url: urlInput };
+    if (customCode) {
+        requestBody.customCode = customCode;
+    }
+
     fetch('/api/shorten', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ url: urlInput })
+        body: JSON.stringify(requestBody)
     })
     .then(response => response.json())
     .then(data => {
         if (data.shortURL) {
             resultDiv.innerHTML = `Shortened URL: <a href="${data.shortURL}" target="_blank">${data.shortURL}</a>`;
+        } else if (data.error) {
+            resultDiv.innerHTML = `Error: ${data.error}`;
         } else {
             resultDiv.innerHTML = "Error shortening URL.";
         }
